@@ -113,7 +113,7 @@ contract TRIPAGO is ERC20
           require(now > pre_enddate);
           stage = Stages.ICO;
           stopped = false;
-         _price_tokn = 12000;    // 1 Ether = 12000 coins
+         _price_tokn = 12000;   // 1 Ether = 12000 coins
           ico_startdate = now;
           ico_enddate = now + 31 days;
      
