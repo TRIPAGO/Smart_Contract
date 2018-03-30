@@ -110,7 +110,7 @@ contract TRIPAGO is ERC20
     
     function start_ICO() public onlyOwner atStage(Stages.PRESALE)
       {
-        //  require(now > pre_enddate);
+          require(now > pre_enddate);
           stage = Stages.ICO;
           stopped = false;
          _price_tokn = 12000;    // 1 Ether = 12000 coins
