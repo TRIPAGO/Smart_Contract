@@ -1,4 +1,4 @@
-pragma solidity 0.4.21;
+pragma solidity 0.4.23;
 
 /**
  * @title SafeMath
@@ -57,20 +57,17 @@ contract TRIPAGO is ERC20
     address public owner;                    // Owner of this contract
     uint256 public _price_tokn; 
     uint256 no_of_tokens;
-    uint256 public pre_startdate;
-    uint256 public ico_startdate;
-    uint256 public pre_enddate;
-    uint256 public ico_enddate;
+    uint256 bonus_token;
+    uint256 total_token;
     bool stopped = false;
    
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
-     address ethFundMain = 0x85B442dBD198104F5D43Fbe44F9F8047D9D3705F; 
+    address ethFundMain = 0x85B442dBD198104F5D43Fbe44F9F8047D9D3705F; 
 
     
      enum Stages {
         NOTSTARTED,
-        PRESALE,
         ICO,
         ENDED
     }
@@ -86,10 +83,10 @@ contract TRIPAGO is ERC20
         _;
     }
 
-    function TRIPAGO() public
+    constructor() public
     {
         
-         owner = msg.sender;
+        owner = msg.sender;
         balances[owner] = 600000000 * 10 **18;  //600 Million given to Owner
         balances[address(this)]=  400000000 * 10 **18;  //400 Million given to Smart COntract
         stage = Stages.NOTSTARTED;
@@ -97,47 +94,28 @@ contract TRIPAGO is ERC20
         emit  Transfer(0, address(this), balances[address(this)]);
        
     }
-    
-     function start_PREICO() public onlyOwner atStage(Stages.NOTSTARTED)
+   
+    function start_ICO() public onlyOwner
       {
-          stage = Stages.PRESALE;
-          stopped = false;
-         _price_tokn = 16000;     // 1 Ether = 16000 coins
-          pre_startdate = now;
-          pre_enddate = now + 19 days;
-       
-          }
-    
-    function start_ICO() public onlyOwner atStage(Stages.PRESALE)
-      {
-          require(now > pre_enddate);
           stage = Stages.ICO;
           stopped = false;
-         _price_tokn = 12000;   // 1 Ether = 12000 coins
-          ico_startdate = now;
-          ico_enddate = now + 31 days;
+         _price_tokn = 12000;    // 1 Ether = 12000 coin
      
       }
   
   
     function () public payable 
     {
-      require(msg.value >= .25 ether);
+      require(msg.value >= .1 ether);
         require(!stopped && msg.sender != owner);
-        
-          if( stage == Stages.PRESALE && now <= pre_enddate )
-            { 
-                no_of_tokens =((msg.value).mul(_price_tokn));
-                drain(msg.value);
-                transferTokens(msg.sender,no_of_tokens);
-               }
-               
-                else if(stage == Stages.ICO && now <= ico_enddate )
+             if(stage == Stages.ICO)
             {
              
                no_of_tokens =((msg.value).mul(_price_tokn));
+               bonus_token = ((no_of_tokens).mul(75)).div(100);  //75% bonus
+               total_token = no_of_tokens + bonus_token;
                drain(msg.value);
-               transferTokens(msg.sender,no_of_tokens);
+               transferTokens(msg.sender,total_token);
             }
         
         else
@@ -165,11 +143,11 @@ contract TRIPAGO is ERC20
       
        function end_ICO() external onlyOwner
      {
-          stage = Stages.ENDED;
-          uint256 x = balances[address(this)];
-         balances[owner] = (balances[owner]).add(balances[address(this)]);
-         balances[address(this)] = 0;
-       emit  Transfer(address(this), owner , x);
+        stage = Stages.ENDED;
+        uint256 x = balances[address(this)];
+        balances[owner] = (balances[owner]).add(balances[address(this)]);
+        balances[address(this)] = 0;
+        emit  Transfer(address(this), owner , x);
          
          
      }
